@@ -1,0 +1,69 @@
+#!/bin/bash
+
+#DECOMMISION !
+
+ 
+
+BASEALL="/users/wrobed/is4all"
+
+dcmlst=`cat decomlist | awk '{print$1}'`
+
+echo "REMEMBER TO FILL correctly decomlist file !"
+
+echo "CAN NOT BE BLANK LINE!!"
+
+ 
+
+generate_raport()
+
+{
+
+tacmd listsystems > $BASEALL
+
+}
+
+ 
+
+decomagents()
+
+{
+
+for i in $BASEALL
+
+do
+
+offlineag=`grep -i "$dcmlst" $i | awk '{print$1}'`
+
+        for o in $offlineag
+
+        do
+
+#        echo $o
+
+        cleanag=`tacmd cleanms -m $o`
+
+        if [[ $cleanag =~ .*deleted.* ]];
+
+        then
+
+        echo "Agent $o has been removed from ITM,"
+
+        else
+
+        echo "Agent $o cannot been removed from ITM. Agent still is ONLINE"
+
+        fi
+
+        done
+
+echo "DONT FORGET TO REMOVE ABOVE HOSTS FROM BLUECARE!!!"
+
+done
+
+}
+
+#echo "DONT FORGET TO REMOVE ABOVE HOSTS FROM BLUECARE!!!"
+
+generate_raport
+
+decomagents
