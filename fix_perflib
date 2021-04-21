@@ -1,0 +1,139 @@
+#!/bin/ksh
+
+ 
+
+BASEALL="/users/wrobed/is4all"
+
+server="is4_xw16ltve0006"
+
+perflib_log="/users/wrobed/scripts/perflib_log"
+
+logs_windows="C:\PROGRA~1\IBM\ITM\tmaitm6_x64\logs"
+
+config_server="C:\PROGRA~1\IBM\ITM\TMAITM~1\KNTENV"
+
+kntenv="/users/wrobed/scripts/KNTENV"
+
+catchedperf="/users/wrobed/scripts/pefromcounters"
+
+ 
+
+generate_agent()
+
+{
+
+tacmd listsystems > $BASEALL
+
+}
+
+ 
+
+checkagents()
+
+{
+
+for i in $BASEALL
+
+do
+
+checkagent=`grep $server $i | grep ' NT ' | awk '{print$4}'`
+
+if [[ `echo $checkagent` == "N" ]]; then
+
+echo "NT Agent is offline on : $server"
+
+echo "REPAIRING :"
+
+echo "DOWNLOADING LAST LOG"
+
+lastlog=`tx $server:06 'dir \0D "C:\PROGRA~1\IBM\ITM\tmaitm6_x64\logs"' | grep kntcma_ | sed '$!d' | awk '{print$4}'`
+
+gtfile=`tacmd getfile -s $logs_windows'\'$lastlog -d $perflib_log -f -m $server:06`
+
+if [[ `echo $gtfile` = *"successfully"* ]]; then
+
+echo "Log downloaded"
+
+else
+
+echo "Something is bad! Please check if this server have correct path of CANDLEHOME"
+
+exit
+
+fi
+
+else
+
+echo "NT Agent jest online na $server!"
+
+exit
+
+fi
+
+done
+
+}
+
+ 
+
+repairagent()
+
+{
+
+lastlogagent=`sed '$!d' $perflib_log`
+
+if [[ $lastlogagent = *"Perfmon"* ]]; then
+
+echo "Problem with Perfmon COUNTER'S, KNTENV file DOWNLOAD and repairing"
+
+tacmd getfile -s $config_server -d $kntenv -f -m $server:06
+
+echo "Get counters and change KNTENV file"
+
+tail -20 $perflib_log | grep counter | cut -d"'" -f2 > $catchedperf
+
+prepared=`sed 's/$/,/' $catchedperf`
+
+prefinallyfinally=`echo $prepared | sed 's/\,[[:blank:]]/,/g'`
+
+finally=`echo $prefinallyfinally | sed 's/.$//'`
+
+echo 'NT_EXCLUDE_PERF_OBJS='$finally >> $kntenv
+
+putkntenv=`tacmd putfile -s $kntenv -d $config_server -f -m $server:06`
+
+echo 'Restart OS Agent'
+
+lodctr=`tx $server:06 'lodctr /R' | grep successfully`
+
+echo "lodctr /R used : "
+
+echo $lodctr
+
+stop=`tx $server:06 'net stop kntcma_primary' | grep stopped`
+
+echo $stop
+
+start=`tx $server:06 'net start kntcma_primary' | grep started`
+
+echo $start
+
+tms | grep $server
+
+else
+
+echo "Problem with something different."
+
+fi
+
+}
+
+ 
+
+ 
+
+generate_agent
+
+checkagents
+
+repairagent
