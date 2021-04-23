@@ -1,0 +1,99 @@
+#!/bin/ksh
+
+#check_offline_agents
+
+ 
+
+BASEALL="/users/wrobed/is4all"
+
+ 
+
+generate_raport()
+
+{
+
+tacmd listsystems > $BASEALL
+
+}
+
+ 
+
+generate_raport
+
+ 
+
+windows()
+
+{
+
+for i in $BASEALL
+
+do
+
+egrep ' 06 | NT ' $i | grep ' N ' | cut -d":" -f1 | sort -u
+
+done
+
+}
+
+ 
+
+linux()
+
+{
+
+for i in $BASEALL
+
+do
+
+egrep ' 08 | LZ ' $i | grep ' N ' | cut -d":" -f1 | sort -u
+
+done
+
+}
+
+ 
+
+aix()
+
+{
+
+for i in $BASEALL
+
+do
+
+egrep ' 07 | UX ' $i | grep ' N ' | cut -d":" -f1 | sort -u
+
+done
+
+}
+
+echo " "
+
+echo "WINDOWS OFFLINE :"
+
+echo "___"
+
+windows
+
+ 
+
+echo " "
+
+echo "LINUX OFFLINE :"
+
+echo "___"
+
+linux
+
+ 
+
+echo " "
+
+echo "AIX OFFLINE :"
+
+echo "___"
+
+aix
+
+echo ""
