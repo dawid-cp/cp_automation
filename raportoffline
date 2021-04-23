@@ -1,0 +1,217 @@
+#!/bin/ksh
+
+ 
+
+RAPORT="/users/wrobed/scripts/raport_offline"
+
+RPRTLX="/users/wrobed/scripts/raport_offlineLX"
+
+RPRTUX="/users/wrobed/scripts/raport_offlineUX"
+
+RPRTWIN="/users/wrobed/scripts/raport_offlineWIN"
+
+description=`echo "Please check ITM Offline Agent's, if some of them are in decomm process let us know. If no please start ITM."`
+
+ 
+
+./checkoffline.sh > $RAPORT
+
+ 
+
+sendlx()
+
+{
+
+mailbody="$description"
+
+echo "From: motobnl@is4f.com" >> /tmp/mail.tmp
+
+echo "To: unix-capacity.lu@is4f.com,Adam.Siemionka@is4f.com,Szymon.Caputa@is4f.com,Rafal.Szczesny@is4f.com" >> /tmp/mail.tmp
+
+echo "CC: Dawid.Wrobel@is4f.com,motobnl@is4f.com" >> /tmp/mail.tmp
+
+echo "Subject: ITM Offline Agent's Raport" >> /tmp/mail.tmp
+
+echo "" >> /tmp/mail.tmp
+
+echo "Hello!" >> /tmp/mail.tmp
+
+echo "" >> /tmp/mail.tmp
+
+echo $mailbody >> /tmp/mail.tmp
+
+cat $RPRTLX >> /tmp/mail.tmp
+
+echo "" >> /tmp/mail.tmp
+
+echo "Dawid Wrobel
+
+Monitoring Tools Team
+
+"  >> /tmp/mail.tmp
+
+ 
+
+cat /tmp/mail.tmp | sendmail -t
+
+}
+
+ 
+
+sendux()
+
+{
+
+mailbody="$description"
+
+echo "From: motobnl@is4f.com" >> /tmp/mail.tmp
+
+echo "To: unix-capacity.lu@is4f.com,Adam.Siemionka@is4f.com,Szymon.Caputa@is4f.com,Rafal.Szczesny@is4f.com" >> /tmp/mail.tmp
+
+echo "CC: Dawid.Wrobel@is4f.com,motobnl@is4f.com" >> /tmp/mail.tmp
+
+echo "Subject: ITM Offline Agent's Raport" >> /tmp/mail.tmp
+
+echo "" >> /tmp/mail.tmp
+
+echo "Hello!" >> /tmp/mail.tmp
+
+echo "" >> /tmp/mail.tmp
+
+echo $mailbody >> /tmp/mail.tmp
+
+cat $RPRTUX >> /tmp/mail.tmp
+
+echo "" >> /tmp/mail.tmp
+
+echo "Dawid Wrobel
+
+Monitoring Tools Team
+
+"  >> /tmp/mail.tmp
+
+ 
+
+cat /tmp/mail.tmp | sendmail -t
+
+}
+
+ 
+
+sendwin()
+
+{
+
+mailbody="$description"
+
+echo "From: motobnl@is4f.com" >> /tmp/mail.tmp
+
+echo "To: Dawid.Wrobel@is4f.com" >> /tmp/mail.tmp
+
+echo "CC: Dawid.Wrobel@is4f.com,motobnl@is4f.com" >> /tmp/mail.tmp
+
+echo "Subject: ITM Offline Agent's Raport" >> /tmp/mail.tmp
+
+echo "" >> /tmp/mail.tmp
+
+echo "Hello!" >> /tmp/mail.tmp
+
+echo "" >> /tmp/mail.tmp
+
+echo $mailbody >> /tmp/mail.tmp
+
+cat $RPRTUX >> /tmp/mail.tmp
+
+echo "" >> /tmp/mail.tmp
+
+echo "Dawid Wrobel
+
+Monitoring Tools Team
+
+"  >> /tmp/mail.tmp
+
+ 
+
+cat /tmp/mail.tmp | sendmail -t
+
+}
+
+ 
+
+lnx_offline()
+
+{
+
+sed -n '/LINUX OFFLINE :/,/ /p' $RAPORT > $RPRTLX
+
+countlx=`wc -l $RPRTLX | awk '{print$1}'`
+
+if [ `echo $countlx` -gt "3" ]; then
+
+sendlx
+
+> /tmp/mail.tmp
+
+else
+
+echo "There is no ITM Offline Agents on LX env"
+
+fi
+
+}
+
+ 
+
+ux_offline()
+
+{
+
+sed -n '/AIX OFFLINE :/,/ /p' $RAPORT > $RPRTUX
+
+countux=`wc -l $RPRTUX | awk '{print$1}'`
+
+if [ `echo $countux` -gt "3" ]; then
+
+sendux
+
+> /tmp/mail.tmp
+
+else
+
+echo "There is no ITM Offline Agents on UX env"
+
+fi
+
+}
+
+ 
+
+win_offline()
+
+{
+
+sed -n '/WINDOWS OFFLINE :/,/ /p' $RAPORT > $RPRTWIN
+
+countwin=`wc -l $RPRTWIN | awk '{print$1}'`
+
+if [ `echo $countwin` -gt "18" ]; then
+
+sendwin
+
+> /tmp/mail.tmp
+
+else
+
+echo "There is no ITM Offline Agents on WIN env"
+
+fi
+
+}
+
+ 
+
+lnx_offline
+
+ux_offline
+
+win_offline
